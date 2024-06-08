@@ -1,0 +1,4 @@
+.vscode/settings.json
+build/*
+src/token_values.cpp
+src/cli_args.h

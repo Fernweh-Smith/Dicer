@@ -5,22 +5,25 @@
 #include "dice.h"
 #include "cli_args.h"
 
+#include "tests.h"
+
 int main(int argc, char *argv[])
 {
-	CLI::ArgumentViews arguments = CLI::generate_argument_views(argc, argv);
-	for (auto &&arg : arguments)
-	{
-		std::cout << arg << '\n';
-	}
+	Tests::test_input_recognition();
+	// CLI::ArgumentViews arguments = CLI::generate_argument_views(argc, argv);
+	// for (auto &&arg : arguments)
+	// {
+	// 	std::cout << arg << '\n';
+	// }
 	
-	if(CLI::is_dice_notation(arguments.at(1)))
-	{
-		std::cout << arguments.at(1) << " is valid dice notation!\n";
-	}
-	else
-	{
-		std::cout << arguments.at(1) << " is not valid dice notation!\n";
-	}
+	// if(CLI::is_dice_notation(arguments.at(1)))
+	// {
+	// 	std::cout << arguments.at(1) << " is valid dice notation!\n";
+	// }
+	// else
+	// {
+	// 	std::cout << arguments.at(1) << " is not valid dice notation!\n";
+	// }
 	
 	// auto d20 = Dice::Dice::create_d20();
 	// std::array<unsigned int, 20> score_count;

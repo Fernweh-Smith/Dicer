@@ -1,7 +1,7 @@
 #include "cli_args.h"
 
 #include <cctype>
-#include <iostream>
+// #include <iostream>
 
 bool is_digit (const char c) { return std::isdigit(static_cast<unsigned char>(c)); }
 bool is_letter(const char c) { return std::isalpha(static_cast<unsigned char>(c)); }
@@ -73,7 +73,6 @@ namespace CLI
         while (should_continue && char_index < arg.length())
         {
             const char c = arg.at(char_index);
-            std::cout << c << '\n';
             
             switch (validation_state)
             {
@@ -81,11 +80,10 @@ namespace CLI
                 if (is_d_char(c))
                 {
                     validation_state = DiceNotationValidationState::D_JUST_FOUND;
-                    
                 }
                 else if(!is_digit(c))
                 {
-                    std::cerr << "Character must be d or digit!\n";
+                    is_notation_valid = false;
                     should_continue = false;
                 }
                 break;
@@ -97,8 +95,8 @@ namespace CLI
                 } 
                 else
                 {
+                    is_notation_valid = false;
                     should_continue = false;
-                    std::cerr << "Character immediately after d must be digit!\n";
                 }
                 break;
             case DiceNotationValidationState::D_FOUND:
@@ -111,7 +109,6 @@ namespace CLI
                 {
                     is_notation_valid = false;
                     should_continue = false;
-                    std::cerr << "Character after post d digit must be digit or mod character (+ or -)!\n";
                 }
                 break;
             case DiceNotationValidationState::MOD_FOUND:
@@ -123,20 +120,12 @@ namespace CLI
                 {
                     is_notation_valid = false;
                     should_continue = false;
-                    std::cerr << "Characters after mod must be digit!\n";
-
                 }
                 break;
             }
-            std::cout << "Iteration: " << char_index << '\n';
             char_index++;
         }
-        
-        //If d not found, is digit or d
-        //if d has been found, 
-            //if d was last found, is digit
-            //if d not last found, is digit or plus or minus
-        //if d and modifier found, is digit
+
         return is_notation_valid;
     }
 } // namespace CLI

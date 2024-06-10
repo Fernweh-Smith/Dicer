@@ -57,78 +57,91 @@ bool CLI::is_long_flag(const std::string_view& arg)
     return true;        
 }
 
-enum class DiceNotationValidationState
+namespace DiceNotationValidation
 {
-    START,
-    D_JUST_FOUND,
-    D_FOUND,
-    MOD_FOUND,
-};
+    enum class State
+    {
+        START,
+        D_JUST_FOUND,
+        D_FOUND,
+        MOD_JUST_FOUND,
+        MOD_FOUND,
+        FAILED,
+    };
+
+    State handle_start(const char c)
+    {
+        if (is_d_char(c)) { return State::D_JUST_FOUND; }
+        if (is_digit(c)) { return State::START; }
+        return State::FAILED;
+    }
+
+    State handle_d_just_found(const char c)
+    {
+        if (is_digit(c)) { return State::D_FOUND; }
+        return State::FAILED;
+    }
+
+    State handle_d_found(const char c)
+    {
+        if (is_plus(c) || is_dash(c)) { return State::MOD_JUST_FOUND; }
+        if (is_digit(c)) { return State::D_FOUND; }
+        return State::FAILED;
+    }
+
+    State handle_mod_just_found(const char c)
+    {
+        if (is_digit(c)) { return State::MOD_FOUND; }
+        return State::FAILED;
+    }
+
+    State handle_mod_found(const char c)
+    {
+        if (is_digit(c)) { return State::MOD_FOUND; }
+        return State::FAILED;
+    }
+
+} // namespace DiceNotation
 
 bool CLI::is_dice_notation(const std::string_view& arg)
 {
-    using namespace CLI;
+    using namespace DiceNotationValidation;
 
-    bool is_notation_valid = false;
-    DiceNotationValidationState validation_state = DiceNotationValidationState::START;
+    State validation_state = State::START;
 
-    bool should_continue = true;
-    size_t char_index = 0;
-    while (should_continue && char_index < arg.length())
+    
+    for(const char c : arg)
     {
-        const char c = arg.at(char_index);
-        
         switch (validation_state)
         {
-        case DiceNotationValidationState::START:
-            if (is_d_char(c))
-            {
-                validation_state = DiceNotationValidationState::D_JUST_FOUND;
-            }
-            else if(!is_digit(c))
-            {
-                is_notation_valid = false;
-                should_continue = false;
-            }
+        case State::START:
+            validation_state = handle_start(c);
             break;
-        case DiceNotationValidationState::D_JUST_FOUND:
-            if(is_digit(c))
-            {
-                validation_state = DiceNotationValidationState::D_FOUND;
-                is_notation_valid = true;
-            } 
-            else
-            {
-                is_notation_valid = false;
-                should_continue = false;
-            }
+        case State::D_JUST_FOUND:
+            validation_state = handle_d_just_found(c);
             break;
-        case DiceNotationValidationState::D_FOUND:
-            if (is_plus(c) || is_dash(c))
-            {
-                validation_state = DiceNotationValidationState::MOD_FOUND;
-                is_notation_valid = false;
-            }
-            else if(!is_digit(c))
-            {
-                is_notation_valid = false;
-                should_continue = false;
-            }
+        case State::D_FOUND:
+            validation_state = handle_d_found(c);
             break;
-        case DiceNotationValidationState::MOD_FOUND:
-            if(isdigit(c))
-            {
-                is_notation_valid = true;
-            }
-            else
-            {
-                is_notation_valid = false;
-                should_continue = false;
-            }
+        case State::MOD_JUST_FOUND:
+            validation_state = handle_mod_just_found(c);
+            break;
+        case State::MOD_FOUND:
+            validation_state = handle_mod_found(c);
+            break;
+        default:
+        validation_state = State::FAILED;
             break;
         }
-        char_index++;
+        if(validation_state==State::FAILED){ break; }
     }
 
-    return is_notation_valid;
+    switch (validation_state)
+    {
+    case State::D_FOUND:
+    case State::MOD_FOUND:
+        return true;
+    default:
+        return false;
+    }
 }

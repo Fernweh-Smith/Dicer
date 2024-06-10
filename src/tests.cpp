@@ -61,6 +61,35 @@ InputTestData creat_invalid_short_flag_inputs()
         "h-",
         " -h",
         "-h--sf",
+        "-1",
+        "-h1",
+    };
+}
+
+InputTestData creat_valid_long_flag_inputs()
+{
+    return InputTestData{
+        "--h",
+        "--hello",
+        "--hello-there",
+        "--hello-there--general-kenobi",
+    };
+}
+
+InputTestData creat_invalid_long_flag_inputs()
+{
+    return InputTestData{
+        "-h",
+        "-vhs",
+        "-v-h-s",
+        "- h",
+        "-h ",
+        "h-",
+        " -h",
+        "-h--sf",
+        "--",
+        "--hello123",
+        "--hello there",
     };
 }
 
@@ -99,10 +128,10 @@ bool validate_input_data(const InputTestData& inputs,
         std::cout << msg_separator;
         std::cout << input << std::string(max_input_length - input.length(), ' ');
         std::cout << msg_separator;
-        std::cout << "Expected Result: ";
+        std::cout << "Expected: ";
         inputs_valid ? (std::cout << msg_valid << std::string(valid_msg_pad, ' ')) : (std::cout << msg_invalid);
         std::cout << msg_separator;
-        std::cout << "Test Result: ";
+        std::cout << "Result: ";
         test_says_valid ? (std::cout << msg_valid << std::string(valid_msg_pad, ' ')) : (std::cout << msg_invalid);
         std::cout << '\n';
     }
@@ -110,7 +139,7 @@ bool validate_input_data(const InputTestData& inputs,
     return all_tests_match;
 }
 
-void something_rather(const InputTestData& valid_inputs,
+void test_input_validation(const InputTestData& valid_inputs,
     const InputTestData& invalid_inputs,
     const InputValidationFuncSignature& validation_function,
     const std::string& title)
@@ -130,12 +159,12 @@ void something_rather(const InputTestData& valid_inputs,
     );
     const bool all_tests_passed = all_valid_inputs_passed && all_invalid_inputs_passed;
     all_tests_passed ? (std::cout << "All tests passed!") : (std::cout << "Some tests failed.");
-    std::cout << std::endl;
+    std::cout << '\n' << std::endl;
 }
 
 void test_dice_notation_recognition()
 {
-    something_rather(
+    test_input_validation(
         create_valid_dice_input_data(),
         create_invalid_dice_input_data(),
         CLI::is_dice_notation,
@@ -143,7 +172,29 @@ void test_dice_notation_recognition()
     );
 }
 
+void test_short_flag_recognition()
+{
+    test_input_validation(
+        creat_valid_short_flag_inputs(),
+        creat_invalid_short_flag_inputs(),
+        CLI::is_short_flag,
+        "Short Flag Validation Tests"
+    );
+}
+
+void test_long_flag_recognition()
+{
+    test_input_validation(
+        creat_valid_long_flag_inputs(),
+        creat_invalid_long_flag_inputs(),
+        CLI::is_long_flag,
+        "Long Flag Validation Tests"
+    );
+}
+
 void Tests::test_input_recognition()
 {
     test_dice_notation_recognition();
+    test_short_flag_recognition();
+    test_long_flag_recognition();
 }

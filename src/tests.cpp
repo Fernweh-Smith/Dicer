@@ -43,6 +43,27 @@ InputTestData create_invalid_dice_input_data()
     };
 }
 
+InputTestData creat_valid_short_flag_inputs()
+{
+    return InputTestData{
+        "-h",
+        "-vhs",
+    };
+}
+
+InputTestData creat_invalid_short_flag_inputs()
+{
+    return InputTestData{
+        "--h",
+        "-v-h-s",
+        "- h",
+        "-h ",
+        "h-",
+        " -h",
+        "-h--sf",
+    };
+}
+
 size_t get_longest_input(const InputTestData& test_data)
 {
     const auto start_iter = test_data.cbegin();
@@ -89,25 +110,37 @@ bool validate_input_data(const InputTestData& inputs,
     return all_tests_match;
 }
 
-void test_dice_notation_recognition()
+void something_rather(const InputTestData& valid_inputs,
+    const InputTestData& invalid_inputs,
+    const InputValidationFuncSignature& validation_function,
+    const std::string& title)
 {
-    const InputValidationFuncSignature& test_func = CLI::is_dice_notation;
-    std::cout << "Dice Notation Validation Test\n";
+    std::cout << title << '\n';
     std::cout << "Valid Inputs:\n";
     bool all_valid_inputs_passed = validate_input_data(
-        create_valid_dice_input_data(),
-        test_func,
+        valid_inputs,
+        validation_function,
         true
     );
     std::cout << "Invalid Inputs:\n";
     bool all_invalid_inputs_passed = validate_input_data(
-        create_invalid_dice_input_data(),
-        test_func,
+        invalid_inputs,
+        validation_function,
         false
     );
     const bool all_tests_passed = all_valid_inputs_passed && all_invalid_inputs_passed;
     all_tests_passed ? (std::cout << "All tests passed!") : (std::cout << "Some tests failed.");
     std::cout << std::endl;
+}
+
+void test_dice_notation_recognition()
+{
+    something_rather(
+        create_valid_dice_input_data(),
+        create_invalid_dice_input_data(),
+        CLI::is_dice_notation,
+        "Dice Notation Validation Tests"
+    );
 }
 
 void Tests::test_input_recognition()

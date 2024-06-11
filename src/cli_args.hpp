@@ -48,14 +48,4 @@ namespace CLI
     bool is_long_flag(const std::string_view& arg);
     bool is_dice_notation(const std::string_view& arg);
 
-    struct DiceCommand
-    {
-        int count, sides, modifier;
-    };
-
-    DiceCommand parse_dice_notation(const std::string_view& arg);
-
-    
-
-    
 } // namespace cli_arguments

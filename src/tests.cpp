@@ -1,5 +1,5 @@
-#include "tests.h"
-#include "cli_args.h"
+#include "tests.hpp"
+#include "cli_args.hpp"
 
 #include <iostream>
 #include <functional>

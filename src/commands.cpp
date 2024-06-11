@@ -2,6 +2,8 @@
 #include "cli_args.hpp"
 #include "dice.hpp"
 
+#include "ValueRange.hpp"
+
 #include <iostream>
 
 std::string modifer_string(const int modifier)
@@ -11,7 +13,7 @@ std::string modifer_string(const int modifier)
     return "";
 }
 
-Commands::ReturnCodes single_dice_roll(Dice::Dice& dice, 
+Commands::ReturnCodes single_dice_roll(Dice::Dice dice, 
     const int modifier, const bool verbose_output)
 {
     const int roll_result = dice.roll();
@@ -33,7 +35,7 @@ Commands::ReturnCodes single_dice_roll(Dice::Dice& dice,
     return Commands::ReturnCodes::SUCCESS;
 }
 
-Commands::ReturnCodes multi_dice_roll(Dice::Dice& dice, 
+Commands::ReturnCodes multi_dice_roll(Dice::Dice dice, 
     const size_t count, const int modifier, const bool verbose_output)
 {
     std::vector<int> rolls;
@@ -50,7 +52,7 @@ Commands::ReturnCodes multi_dice_roll(Dice::Dice& dice,
         std::cout << count << "d" << dice.n_sides() << mod_str << '\n';
         for (size_t i = 0; i < count; i++)
         {
-            std::cout << "Roll " << i+1 << ":";
+            std::cout << "Roll " << i+1 << ": ";
             std::cout << rolls.at(i) << " | ";
             mod_str.empty() ? (std::cout << "+0") : (std::cout << mod_str);
             std::cout << " = " << rolls.at(i) + modifier << '\n';
@@ -67,9 +69,38 @@ Commands::ReturnCodes multi_dice_roll(Dice::Dice& dice,
     return Commands::ReturnCodes::SUCCESS;
 }
 
-Commands::ReturnCodes multi_dice_roll_summed(Dice::Dice& dice, 
+Commands::ReturnCodes multi_dice_roll_summed(Dice::Dice dice, 
     const size_t count, const int modifier, const bool verbose_output)
 {
+    std::vector<int> rolls;
+    rolls.reserve(count);
+
+    int roll_sum = 0;
+    for (size_t i = 0; i < count; i++)
+    {
+        rolls.emplace_back(dice.roll());
+        roll_sum += rolls.back();
+    }
+
+    
+
+    if (verbose_output)
+    {
+        std::string mod_str = modifer_string(modifier);
+        std::cout << count << "d" << dice.n_sides() << "Summed " << mod_str << '\n';
+        for (size_t i = 0; i < count; i++)
+        {
+            std::cout << "Roll " << i+1 << ": " << rolls.at(i);
+        }
+        std::cout << "Sum of Rulls: " << roll_sum;
+        std::cout << " | ";
+        mod_str.empty() ? (std::cout << "+0") : (std::cout << mod_str);
+        std::cout << " = " << roll_sum + modifier << '\n';
+    }
+    else
+    {
+        std::cout << roll_sum + modifier;
+    }
 
     return Commands::ReturnCodes::SUCCESS;
 }
@@ -86,7 +117,7 @@ Commands::ReturnCodes display_help()
 Commands::ReturnCodes display_error(const std::string& msg)
 {
     std::cerr << "You done messed up!\n";
-    std::cerr << msg;
+    std::cerr << msg << '\n';
     return Commands::ReturnCodes::ERROR;
 }
 
@@ -206,20 +237,45 @@ Commands::CommandFuncSigntature Commands::command_from_cli_args(
     
     DiceRollData data = parse_dice_notation(arg_views.at(1));
 
-    if (data.count == 0 || data.sides == 0)
+    if(!Dice::Dice::LegalCountRange.x_in_range(data.count))
+    { return []() { 
+            return display_error("Dice Count Invalid. See Help for details."); 
+            };}
+
+    if(!Dice::Dice::LegalModifierRange.x_in_range(data.modifier))
+    { return []() { 
+            return display_error("Dice Modifier Invalid. See Help for details."); 
+            };}
+
+    std::function<Dice::Dice()> diceFactory;
+    const auto factory_iter = Dice::Dice::SideFactoryMap.find(data.sides);
+    if (factory_iter == Dice::Dice::SideFactoryMap.cend())
     {
-        return []() { 
-            return display_error("Bad Dice Argument"); 
-            };
+        return []() { return display_error("Dice Sides Invalid. See Help for details."); };
+    }
+    else
+    {
+        diceFactory = factory_iter->second;
+    }
+
+    if (data.count == 1)
+    {
+        return [diceFactory, data, verbose_output]()
+            { return single_dice_roll(diceFactory(), data.modifier, verbose_output); };
+    }
+    else if (sum_multiple)
+    {
+        return [diceFactory, data, verbose_output]()
+            { return multi_dice_roll_summed(diceFactory(),
+                data.count, data.modifier, verbose_output); };
+    }
+    else
+    {
+        return [diceFactory, data, verbose_output]()
+            { return multi_dice_roll(diceFactory(),
+                data.count, data.modifier, verbose_output); };
     }
     
-    std::cerr << "Count: " << data.count << " Sides: " << data.sides
-        << " Modifier: " << data.modifier << '\n';
-        
-
-    return []() { 
-            return display_error(
-                "Temporary Message. Will be replaced later I promise!"); 
-            };
     
+    return []() { return display_error("Something went wrong!"); };
 }

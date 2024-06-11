@@ -2,6 +2,7 @@
 
 #include <array>
 #include <random>
+#include <map>
 #include "ValueRange.hpp"
 
 namespace Dice
@@ -18,13 +19,6 @@ namespace Dice
         std::uniform_int_distribution<int> distribution;
         
     public:
-        static constexpr auto LegalSideValues = 
-            std::to_array<Side>({4,6,8,10,12,20});
-
-        static const ValueRange<Side> LegalCountRange;
-        static const ValueRange<Side> LegalModifierRange;
-        static bool x_legal_side(Side x);
-
         static Dice create_d4();
         static Dice create_d6();
         static Dice create_d8();
@@ -34,5 +28,13 @@ namespace Dice
 
         Side n_sides() const;
         Side roll();
+
+        static constexpr auto LegalSideValues = 
+            std::to_array<Side>({4,6,8,10,12,20});
+
+        static const std::map<Side, std::function<Dice()>> SideFactoryMap;
+        static const ValueRange<int> LegalCountRange;
+        static const ValueRange<int> LegalModifierRange;
+        static bool x_legal_side(Side x);
     };
 } // namespace Dice

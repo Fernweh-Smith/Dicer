@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+// #include <utility>
 
 constexpr unsigned int two_power(unsigned int power)
 {
@@ -20,6 +21,7 @@ namespace CLI
         F_HELP       = two_power(2),
         F_VERBOSE    = two_power(3),
         F_SUM        = two_power(4),
+        BAD_FLAG     = two_power(5),
     };
 
     using ArgumentViews = std::vector<std::string_view>;
@@ -29,8 +31,8 @@ namespace CLI
 
     const ShortFlagMap kShortFlags{
         {'h', Tokens::F_HELP},
-        {'v', Tokens::F_HELP},
-        {'s', Tokens::F_HELP},
+        {'v', Tokens::F_VERBOSE},
+        {'s', Tokens::F_SUM},
     };
 
     const LongFlagMap kLongFlags{
@@ -45,5 +47,15 @@ namespace CLI
     bool is_short_flag(const std::string_view& arg);
     bool is_long_flag(const std::string_view& arg);
     bool is_dice_notation(const std::string_view& arg);
+
+    struct DiceCommand
+    {
+        int count, sides, modifier;
+    };
+
+    DiceCommand parse_dice_notation(const std::string_view& arg);
+
+    
+
     
 } // namespace cli_arguments

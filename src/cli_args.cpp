@@ -145,3 +145,52 @@ bool CLI::is_dice_notation(const std::string_view& arg)
         return false;
     }
 }
+
+
+
+CLI::ArgumentTokens CLI::tokenise_arguments(const CLI::ArgumentViews& argViews)
+{
+    ArgumentTokens tokens;
+    tokens.reserve(10);
+
+    for(const auto& arg : argViews)
+    {
+        if (is_dice_notation(arg))
+        {
+            tokens.emplace_back(Tokens::A_DICE);
+            continue;
+        }
+        if(is_short_flag(arg))
+        {
+            for (size_t i = 1; i < arg.length(); i++)
+            {
+                const char c = arg.at(i);
+                const auto flag_iter = kShortFlags.find(c);
+                if(flag_iter==kShortFlags.cend())
+                {
+                    tokens.emplace_back(Tokens::BAD_FLAG);
+                }
+                else{
+                    tokens.emplace_back(flag_iter->second);
+                }
+            }
+            continue;
+        }
+        if(is_long_flag(arg))
+        {
+            const auto flag_stripped = arg.substr(2, arg.length()-2);
+            const auto flag_iter = kLongFlags.find(std::string(flag_stripped));
+            if(flag_iter==kLongFlags.cend())
+            {
+                tokens.emplace_back(Tokens::BAD_FLAG);
+            }
+            else
+            {
+                tokens.emplace_back(flag_iter->second);
+            }
+            continue;
+        }
+        tokens.emplace_back(Tokens::UNIDENTIFIED);
+    }
+    return tokens;
+}

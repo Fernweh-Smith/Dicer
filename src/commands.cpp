@@ -117,6 +117,10 @@ DiceRollData parse_dice_notation(const std::string_view& arg)
             std::cerr << "Failed To Convert Count" << '\n';
         }
     }
+    else
+    {
+        dice_roll_data.count = 1;
+    }
 
     if(mod_index == arg.npos)
     {

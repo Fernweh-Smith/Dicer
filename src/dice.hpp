@@ -2,6 +2,7 @@
 
 #include <array>
 #include <random>
+#include "ValueRange.hpp"
 
 namespace Dice
 {
@@ -19,6 +20,11 @@ namespace Dice
     public:
         static constexpr auto LegalSideValues = 
             std::to_array<Side>({4,6,8,10,12,20});
+
+        static const ValueRange<Side> LegalCountRange;
+        static const ValueRange<Side> LegalModifierRange;
+        static bool x_legal_side(Side x);
+
         static Dice create_d4();
         static Dice create_d6();
         static Dice create_d8();

@@ -2,6 +2,18 @@
 
 namespace Dice
 {
+    const ValueRange<int> LegalCountRange{1,10};
+    const ValueRange<int> LegalModifierRange{-100, 100};
+
+    bool Dice::x_legal_side(Side x)
+    {
+        for (const auto &val : LegalSideValues)
+        {
+            if (x==val) { return true; }
+        }
+        return false;        
+    }
+
     Dice::Dice(Side nSides) : sides(nSides), random_number_engine(rand_device()), distribution(1, sides) {}
 
     Dice Dice::create_d4() { return Dice(4); }

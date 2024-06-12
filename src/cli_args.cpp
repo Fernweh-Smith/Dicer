@@ -197,6 +197,8 @@ CLI::ArgumentTokens CLI::tokenise_arguments(const CLI::ArgumentViews& argViews)
     return tokens;
 }
 
+
+
 void CLI::print_usage()
 {
     const std::string dicer_keyword = "dicer";
@@ -205,6 +207,8 @@ void CLI::print_usage()
     std::cout << left_padding << dicer_keyword << " <DICE> [flags]" << '\n';
     std::cout << left_padding << dicer_keyword << " -h|--help" << '\n';
 }
+
+
 
 void CLI::print_options()
 {
@@ -217,6 +221,8 @@ void CLI::print_options()
     std::cout << left_padding << "-s --sum_multiple" << left_padding 
         << "Add the results of the rolls together before adding the modifier." << '\n';
 }
+
+
 
 void CLI::print_dice_guide()
 {

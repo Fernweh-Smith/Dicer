@@ -61,9 +61,9 @@ Commands::ReturnCodes multi_dice_roll(Dice::Dice dice,
     else
     {
         std::cout << "Max: " << *(std::max_element(
-            rolls.cbegin(), rolls.cend())) + modifier;
+            rolls.cbegin(), rolls.cend())) + modifier << '\n';
         std::cout << "Min: " << *(std::min_element(
-            rolls.cbegin(), rolls.cend())) + modifier;
+            rolls.cbegin(), rolls.cend())) + modifier << '\n';
     }
     
     return Commands::ReturnCodes::SUCCESS;
@@ -107,17 +107,30 @@ Commands::ReturnCodes multi_dice_roll_summed(Dice::Dice dice,
 
 Commands::ReturnCodes display_help()
 {
-    // Display usage
-    // Overview of dice notation
-    // Flags
-    std::cerr << "HELP ME PLS!\n";
+    std::cout << "Dicer.\n";
+    std::cout << '\n';
+    CLI::print_usage();
+    std::cout << '\n';
+    CLI::print_dice_guide();
+    std::cout << '\n';
+
+    CLI::print_options();
+    std::cout << '\n';
+
     return Commands::ReturnCodes::HELP;
 }
 
-Commands::ReturnCodes display_error(const std::string& msg)
+Commands::ReturnCodes display_error_bad_args()
 {
-    std::cerr << "You done messed up!\n";
-    std::cerr << msg << '\n';
+    std::cerr << "Error: Bad Arguments." << '\n';
+    CLI::print_usage();
+    return Commands::ReturnCodes::ERROR;
+}
+
+Commands::ReturnCodes display_error_unforseen()
+{
+    std::cerr << "Error: Something went wrong." << '\n';
+    CLI::print_usage();
     return Commands::ReturnCodes::ERROR;
 }
 
@@ -204,14 +217,12 @@ Commands::CommandFuncSigntature Commands::command_from_cli_args(
 {
     if (arg_tokens.at(1) == CLI::Tokens::F_HELP)
     {
-        return []() { return display_help(); };
+        return { display_help };
     }
 
     if (arg_tokens.at(1) != CLI::Tokens::A_DICE)
     {
-        return []() { 
-            return display_error("First Arg must be dice notation."); 
-            };
+        return { display_error_bad_args };
     }
 
     
@@ -227,9 +238,7 @@ Commands::CommandFuncSigntature Commands::command_from_cli_args(
             token == CLI::Tokens::F_HELP |
             token == CLI::Tokens::A_DICE)
         {
-            return []() { 
-            return display_error("Bad arguments. <-h|--help> for help."); 
-            };
+            return { display_error_bad_args };
         }
         if (token == CLI::Tokens::F_VERBOSE){ verbose_output = true; }
         if (token == CLI::Tokens::F_SUM){ sum_multiple = true; } 
@@ -238,20 +247,16 @@ Commands::CommandFuncSigntature Commands::command_from_cli_args(
     DiceRollData data = parse_dice_notation(arg_views.at(1));
 
     if(!Dice::Dice::LegalCountRange.x_in_range(data.count))
-    { return []() { 
-            return display_error("Dice Count Invalid. See Help for details."); 
-            };}
+    { return { display_error_bad_args }; }
 
     if(!Dice::Dice::LegalModifierRange.x_in_range(data.modifier))
-    { return []() { 
-            return display_error("Dice Modifier Invalid. See Help for details."); 
-            };}
+    { return { display_error_bad_args }; }
 
     std::function<Dice::Dice()> diceFactory;
     const auto factory_iter = Dice::Dice::SideFactoryMap.find(data.sides);
     if (factory_iter == Dice::Dice::SideFactoryMap.cend())
     {
-        return []() { return display_error("Dice Sides Invalid. See Help for details."); };
+        return { display_error_bad_args };
     }
     else
     {
@@ -277,5 +282,5 @@ Commands::CommandFuncSigntature Commands::command_from_cli_args(
     }
     
     
-    return []() { return display_error("Something went wrong!"); };
+    return { display_error_unforseen };
 }

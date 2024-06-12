@@ -1,7 +1,9 @@
 #include "cli_args.hpp"
+#include "dice.hpp"
 
 #include <cctype>
-// #include <iostream>
+#include <iostream>
+
 
 bool is_digit (const char c) { return std::isdigit(static_cast<unsigned char>(c)); }
 bool is_letter(const char c) { return std::isalpha(static_cast<unsigned char>(c)); }
@@ -193,4 +195,51 @@ CLI::ArgumentTokens CLI::tokenise_arguments(const CLI::ArgumentViews& argViews)
         tokens.emplace_back(Tokens::UNIDENTIFIED);
     }
     return tokens;
+}
+
+void CLI::print_usage()
+{
+    const std::string dicer_keyword = "dicer";
+    const std::string left_padding = "  ";
+    std::cout << "Usage:\n";
+    std::cout << left_padding << dicer_keyword << " <DICE> [flags]" << '\n';
+    std::cout << left_padding << dicer_keyword << " -h|--help" << '\n';
+}
+
+void CLI::print_options()
+{
+    const std::string dicer_keyword = "dicer";
+    const std::string left_padding = "  ";
+    std::cout << "Options:\n";
+    std::cout << left_padding << "-h --help        " << left_padding << "Print Help." << '\n';
+    std::cout << left_padding << "-v --verbose     " << left_padding 
+        << "Print results in detailed format." << '\n';
+    std::cout << left_padding << "-s --sum_multiple" << left_padding 
+        << "Add the results of the rolls together before adding the modifier." << '\n';
+}
+
+void CLI::print_dice_guide()
+{
+    const int count_min = Dice::Dice::LegalCountRange.min();
+    const int count_max = Dice::Dice::LegalCountRange.max();
+    const int modifer_min = Dice::Dice::LegalModifierRange.min();
+    const int modifier_max = Dice::Dice::LegalModifierRange.max();
+
+    const std::string left_padding = "  ";
+
+    std::cout << "Dice Notation:\n";
+    std::cout << left_padding << "?(int:count)d(int:n_sides)?([+|-]int:modifier)\n";
+    std::cout << left_padding << "Examples: d20, 1d4, 2d12+3, d6-6\n";
+    std::cout << left_padding << "Valid Counts: " << count_min << " - " << count_max << '\n';
+
+    std:: cout << left_padding << "Valid Side Count: " << Dice::Dice::LegalSideValues.at(0);
+
+    for (size_t i = 1; i < Dice::Dice::LegalSideValues.size(); i++)
+    {
+        std::cout << ", " << Dice::Dice::LegalSideValues.at(i);
+    }
+    std::cout << '\n';
+    
+    std::cout << left_padding << "Valid Modifiers: " << modifer_min << " - " << modifier_max << '\n';
+
 }

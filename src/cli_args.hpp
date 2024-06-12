@@ -48,4 +48,8 @@ namespace CLI
     bool is_long_flag(const std::string_view& arg);
     bool is_dice_notation(const std::string_view& arg);
 
+    void print_usage();
+    void print_options();
+    void print_dice_guide();
+
 } // namespace cli_arguments
